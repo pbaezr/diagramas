@@ -1,9 +1,9 @@
 function varargout = diagramas(varargin)
 % DIAGRAMAS es una interfaz de usuario que permite calcular los diagramas
-% de interacción P-M y de Momento-Curvatura de una sección rectangular de
-% hormigón armado.
+% de interacciÃ³n P-M y de Momento-Curvatura de una secciÃ³n rectangular de
+% hormigÃ³n armado.
 
-% Licenciado bajos los términos del MIT.
+% Licenciado bajos los tÃ©rminos del MIT.
 % Copyright (c) 2019 Pablo Baez R.
 
 % Begin initialization code - DO NOT EDIT
@@ -31,14 +31,14 @@ path = pwd;
 if isdeployed, path = fileparts(mfilename('fullpath')); end
 addpath(fullfile(path,'lib'))
 
-% definición de variable que indica si los datos ingresados son válidos
+% definiciÃ³n de variable que indica si los datos ingresados son vÃ¡lidos
 % (con lo que los diagramas pueden ser desplegados)
 handles.datosValidos = false;
 handles.armadurasSimetricas = false;
 
 set(handles.uipanel4,'position',handles.uipanel3.Position,'title',['Resultados para ',char(981)])
 
-% creación de labels (los "static texts" de Matlab no permiten el uso de html...)
+% creaciÃ³n de labels (los "static texts" de Matlab no permiten el uso de html...)
 textos(1) = javacomponent(javax.swing.JLabel('<html>d<sub>2</sub>'),[10 259 23 15],handles.uipanel1);
 textos(2) = javacomponent(javax.swing.JLabel('<html>d<sub>1</sub>'),[10 230 23 15],handles.uipanel1);
 textos(3) = javacomponent(javax.swing.JLabel('<html>A<sub>s2</sub>'),[10 201 23 15],handles.uipanel1);
@@ -59,10 +59,10 @@ textos(12) = javacomponent(javax.swing.JLabel('<html>&epsilon;<sub>c</sub>'),[10
 textos(13) = javacomponent(javax.swing.JLabel('<html>&epsilon;<sub>s2</sub>'),[10 44 23 15],handles.uipanel4);
 textos(14) = javacomponent(javax.swing.JLabel('<html>&epsilon;<sub>s1</sub>'),[10 15 23 15],handles.uipanel4);
 
-% estandarización de fuente (segoe ui de 11px)
+% estandarizaciÃ³n de fuente (segoe ui de 11px)
 for i = 1:length(textos), textos(i).setFont(java.awt.Font('segoe ui',0,11)); end
 
-% creación y personalización de los outputs
+% creaciÃ³n y personalizaciÃ³n de los outputs
 outputs = {'phi_1','c_1','es2_1','es1_1','M_2','c_2','ec_2','es2_2','es1_2'};
 parent = handles.uipanel3;
 pos = [33 100 49 21];
@@ -71,15 +71,15 @@ for i = 1:length(outputs)
     if i == 2 || i == 6
         tooltip='profundidad del eje neutro';
     elseif i == 3 || i == 8
-        tooltip='<html>deformación unitaria del <br>acero a compresión';
+        tooltip='<html>deformaciÃ³n unitaria del <br>acero a compresiÃ³n';
     elseif i == 4 || i == 9
-        tooltip='<html>deformación unitaria del <br>acero a tracción';
+        tooltip='<html>deformaciÃ³n unitaria del <br>acero a tracciÃ³n';
     elseif i == 5
         pos=[33 129 49 21];
         tooltip=[];
         parent=handles.uipanel4;
     elseif i == 7
-        tooltip = 'deformación máxima en el hormigón';
+        tooltip = 'deformaciÃ³n mÃ¡xima en el hormigÃ³n';
     end
     handles.(outputs{i}) = javacomponent(javax.swing.JLabel(''),pos,parent);
     handles.(outputs{i}).setBackground(java.awt.Color(0.94,0.94,0.94));
@@ -90,18 +90,18 @@ for i = 1:length(outputs)
     pos = pos-[0 29 0 0];
 end
 
-% definición de parámetros iniciales para las curvas tensión-deformación de los materiales
-% (aplicables solo para el diagrama M-phi, a excepción de f'c y fy)
-parametros.modeloAcero = {1 'Elastoplástico'};
+% definiciÃ³n de parÃ¡metros iniciales para las curvas tensiÃ³n-deformaciÃ³n de los materiales
+% (aplicables solo para el diagrama M-phi, a excepciÃ³n de f'c y fy)
+parametros.modeloAcero = {1 'ElastoplÃ¡stico'};
 parametros.ef = 0.2;
 parametros.fy = 420;
 parametros.modeloHormigon = {1 'Saenz'};
 parametros.fc = 30;
 parametros.e0 = 0.002;
-parametros.modeloHormigonTrac = {1 'sin tracción'};
+parametros.modeloHormigonTrac = {1 'sin tracciÃ³n'};
 handles.parametros = parametros;
 
-% creación de figura explicativa de los inputs
+% creaciÃ³n de figura explicativa de los inputs
 axes(handles.axes2)
 grid on, hold on, axis off, axis equal
 plot([0 1.5 1.5 0 0],[0 0 2 2 0],'color','k','linewidth',1.5)
@@ -158,7 +158,7 @@ function input_error_Callback(hObject, ~, handles)
 verificarInput(hObject,handles,10,@(x)x>0,'El valor ingresado (directamente o mediante el uso de funciones) debe ser un real positivo.')
 
 function input_P_Callback(hObject, ~, handles)
-verificarInput(hObject,handles,10,@(x)isreal(x),'El valor ingresado (directamente o mediante el uso de funciones) debe ser un número real.')
+verificarInput(hObject,handles,10,@(x)isreal(x),'El valor ingresado (directamente o mediante el uso de funciones) debe ser un nÃºmero real.')
 
 function verificarInput(hObject,handles,factorConversion,condicion,mensajeError)
 hObject.UserData = [];
@@ -178,12 +178,12 @@ catch
 end
 
 function input_fc_Callback(hObject, ~, handles)
-fc = [16 20 25 30 35]; % valores de f'c en MPa más usuales (en Chile, por lo menos)
+fc = [16 20 25 30 35]; % valores de f'c en MPa mÃ¡s usuales (en Chile, por lo menos)
 handles.parametros.fc = fc(hObject.Value); % el objeto es un popupmenu
 graficarDiagrama(handles)
 
 function input_fy_Callback(hObject, ~, handles)
-fy = [280 420]; % valores de fy en MPa típicos para el acero utilizado en hormigón armado
+fy = [280 420]; % valores de fy en MPa tÃ­picos para el acero utilizado en hormigÃ³n armado
 handles.parametros.fy = fy(hObject.Value);
 graficarDiagrama(handles)
 
@@ -212,10 +212,10 @@ if ~isempty(strfind(eventdata.Key,'arrow'))
 end
 
 function uibuttongroup1_SelectionChangedFcn(~, ~, handles)
-% determinar la opción escogida (diagrama P-M o M-phi)
+% determinar la opciÃ³n escogida (diagrama P-M o M-phi)
 flag = handles.radiobutton1.Value == 1;
 
-% mostrar, ocultar o inhabilitar objetos según la opción
+% mostrar, ocultar o inhabilitar objetos segÃºn la opciÃ³n
 flags={'off' 'on'};
 handles.textoError.setEnabled(~flag);
 handles.uipanel3.Visible = flags{flag+1};
@@ -229,11 +229,11 @@ function uibuttongroup2_SelectionChangedFcn(~, ~, handles)
 input_carga_Callback(handles.input_carga, [], handles)
 
 function pushbutton1_Callback(hObject, ~, handles)
-% definición de los prámetros de las curvas tensión-deformación de los materiales
-parametros2 = materiales(handles.parametros); % si no hay modificación, parametros2 = []
+% definiciÃ³n de los prÃ¡metros de las curvas tensiÃ³n-deformaciÃ³n de los materiales
+parametros2 = materiales(handles.parametros); % si no hay modificaciÃ³n, parametros2 = []
 
 if ~isempty(parametros2)
-    handles.parametros = parametros2; % almacenar los nuevos parámetros      
+    handles.parametros = parametros2; % almacenar los nuevos parÃ¡metros      
     handles.text48.String = ['Acero: ',parametros2.modeloAcero{2}];
     handles.text49.String = ['Hormig: ',parametros2.modeloHormigon{2},', ',parametros2.modeloHormigonTrac{2}];
     guidata(hObject,handles);
@@ -244,21 +244,22 @@ function graficarDiagrama(handles)
 handles.figure1.Pointer = 'watch';
 
 % obtener valores de los inputs
-b = handles.input_b.UserData; % ancho de la sección (en mm)
-h = handles.input_h.UserData; % altura de la sección (en mm)
-d2 = handles.input_d2.UserData; % ubicación de la armadura As2 (en mm)
-d1 = handles.input_d1.UserData; % ubicación de la armadura As1 (en mm)
-As2 = handles.input_As2.UserData; % área total de la armadura As2 (en mm^2)
-As1 = handles.input_As1.UserData; % área total de la armadura As1 (en mm^2)
+b = handles.input_b.UserData; % ancho de la secciÃ³n (en mm)
+h = handles.input_h.UserData; % altura de la secciÃ³n (en mm)
+d2 = handles.input_d2.UserData; % ubicaciÃ³n de la armadura As2 (en mm)
+d1 = handles.input_d1.UserData; % ubicaciÃ³n de la armadura As1 (en mm)
+As2 = handles.input_As2.UserData; % Ã¡rea total de la armadura As2 (en mm^2)
+As1 = handles.input_As1.UserData; % Ã¡rea total de la armadura As1 (en mm^2)
 
 if ~isempty(b) && ~isempty(h) && ~isempty(d2) && ~isempty(d1) && ~isempty(As2) && ~isempty(As1)
 
     axes(handles.axes1), cla
     grid on, hold on
+    set(handles.axes1,'xlimmode','auto','ylimmode','auto')
     
     % verificar la congruencia de los valores de d1 y d2
     if d2 > h || d1 > h || d2 > d1
-        errordlg('Los valores de d1 y d2 no deben ser mayores que h, además de que d1 > d2.','Incongruencia en los datos','modal')
+        errordlg('Los valores de d1 y d2 no deben ser mayores que h, ademÃ¡s de que d1 > d2.','Incongruencia en los datos','modal')
         handles.figure1.Pointer = 'arrow';
         handles.datosValidos = false;
         return
@@ -267,16 +268,16 @@ if ~isempty(b) && ~isempty(h) && ~isempty(d2) && ~isempty(d1) && ~isempty(As2) &
     handles.armadurasSimetricas = As1 == As2 && d2 == h-d1;
 
     if handles.radiobutton1.Value == 1 % diagrama P - M
-        % obtención, conversión de unidades y almacenamiento de los resultados
+        % obtenciÃ³n, conversiÃ³n de unidades y almacenamiento de los resultados
         [M1,P,c1,phi1] = interaccionPM(b,h,d1,d2,As1,As2,handles.parametros.fc,handles.parametros.fy);
-        M1 = 0.1*M1; % conversión de kN-m a tonf-m
-        P = 0.1*P; % conversión de kN a tonf
-        c1 = 0.1*c1; % conversión de mm a cm
+        M1 = 0.1*M1; % conversiÃ³n de kN-m a tonf-m
+        P = 0.1*P; % conversiÃ³n de kN a tonf
+        c1 = 0.1*c1; % conversiÃ³n de mm a cm
         resultadosPM.M1 = M1;
         resultadosPM.P = P;
         resultadosPM.c1 = c1;
         
-        % identificar el límite superior de compresión por concepto de la excentricidad accidental, que solo aplicaría a columnas y no a muros 
+        % identificar el lÃ­mite superior de compresiÃ³n por concepto de la excentricidad accidental, que solo aplicarÃ­a a columnas y no a muros 
         [~,ind] = min(abs(P-0.8*P(end)));        
         
         % graficar curva Pn - Mn
@@ -286,7 +287,7 @@ if ~isempty(b) && ~isempty(h) && ~isempty(d2) && ~isempty(d1) && ~isempty(As2) &
         curvaReducida = plot([phi1(1:ind).*M1(1:ind) 0],[phi1(1:ind).*P(1:ind) phi1(ind)*P(ind)],'color','r');
         plot(phi1(ind:end).*M1(ind:end),phi1(ind:end).*P(ind:end),'--','color','r')
 
-        % graficar rama M < 0 si es necesario (sección armada de forma no simétrica)
+        % graficar rama M < 0 si es necesario (secciÃ³n armada de forma no simÃ©trica)
         if ~handles.armadurasSimetricas            
             [M2,~,c2,phi2] = interaccionPM(b,h,d1,d2,As1,As2,handles.parametros.fc,handles.parametros.fy,-1);
             M2 = 0.1*M2;
@@ -310,15 +311,15 @@ if ~isempty(b) && ~isempty(h) && ~isempty(d2) && ~isempty(d1) && ~isempty(As2) &
 
         handles.resultadosPM = resultadosPM;
     else%if handles.radiobutton2.Value == 1 % diagrama M - phi
-        % obtener parámetros para el análisis seccional
+        % obtener parÃ¡metros para el anÃ¡lisis seccional
         n = handles.input_n.UserData;
         tol = handles.input_error.UserData;
         P = handles.input_P.UserData;
         
-        % verificar que estos parametros sean válidos
+        % verificar que estos parametros sean vÃ¡lidos
         if isempty(n) || isempty(tol) || isempty(P), return, end
 
-        % obtención, conversión de unidades y almacenamiento de los resultados
+        % obtenciÃ³n, conversiÃ³n de unidades y almacenamiento de los resultados
         [M,phi,c] = momento_curvatura(b,h,d1,d2,As1,As2,P,handles.parametros,n,tol);
         M = 0.1*M;
         phi = 10*phi;
@@ -334,7 +335,7 @@ if ~isempty(b) && ~isempty(h) && ~isempty(d2) && ~isempty(d1) && ~isempty(As2) &
         [~,ind_eu] = min(abs(phi.*c-0.003)); % 
         plot(phi(ind_eu),M(ind_eu),'o','markerfacecolor','r','markeredgecolor','b')
         
-        % si la sección no está armada simétricamente, incluir la rama con phi<0
+        % si la secciÃ³n no estÃ¡ armada simÃ©tricamente, incluir la rama con phi<0
         if ~handles.armadurasSimetricas
             [M2,phi2,c2] = momento_curvatura(b,h,d1,d2,As1,As2,P,handles.parametros,n,tol,-1);
             
@@ -367,7 +368,7 @@ guidata(handles.figure1,handles)
 
 
 function input_carga_Callback(hObject, ~, handles)
-% incialización de outputs dependientes de la carga axial especificada
+% incializaciÃ³n de outputs dependientes de la carga axial especificada
 phi = [];
 c = [];
 es1 = [];
@@ -381,7 +382,7 @@ try
         % actualizar el "static text"
         hObject.String = num2str(P);
         
-        % obtener variables y reconvertirlas a centímetros
+        % obtener variables y reconvertirlas a centÃ­metros
         h = 0.1*handles.input_h.UserData;
         dd = 0.1*handles.input_d2.UserData;
         d = 0.1*handles.input_d1.UserData;
@@ -389,7 +390,7 @@ try
         if handles.datosValidos            
             % obtener resultados (valores de P, M y phi) 
             resultados = handles.resultadosPM;
-            eu = 0.003; % deformación unitaria de compresión en el estado límite último
+            eu = 0.003; % deformaciÃ³n unitaria de compresiÃ³n en el estado lÃ­mite Ãºltimo
             
             % calcular c, phi, es1 y es2 para la carga axial especificada
             c = interp1(resultados.P,resultados.c1,P); % se interpola con la curva Pn-Mn
@@ -407,13 +408,13 @@ try
             end
         end
     else
-        errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un número real.','Error en el ingreso de datos','modal')
+        errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un nÃºmero real.','Error en el ingreso de datos','modal')
     end
 catch
-    errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un número real.','Error en el ingreso de datos','modal')
+    errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un nÃºmero real.','Error en el ingreso de datos','modal')
 end    
 
-% actualización de outputs (objetos Java de tipo JLabels)
+% actualizaciÃ³n de outputs (objetos Java de tipo JLabels)
 handles.phi_1.setText(num2str(phi,'%0.2g'))
 handles.c_1.setText(num2str(c,'%.2f'));
 handles.es1_1.setText(num2str(es1,'%.5f'));
@@ -421,12 +422,12 @@ handles.es2_1.setText(num2str(es2,'%.5f'));
 
 
 function input_phi_Callback(hObject, ~, handles)
-% incialización de outputs dependientes de phi
+% incializaciÃ³n de outputs dependientes de phi
 M = []; % momento
 c = []; % profundidad del eje neutro
-ec = []; % deformación unitaria de la fibra más comprimida
-es1 = []; % deformación unitaria del acero As1
-es2 = []; % deformación unitaria del acero As2
+ec = []; % deformaciÃ³n unitaria de la fibra mÃ¡s comprimida
+es1 = []; % deformaciÃ³n unitaria del acero As1
+es2 = []; % deformaciÃ³n unitaria del acero As2
 
 axes(handles.axes1)
 delete(findobj(gca,'type','line','tag','punto'))
@@ -443,7 +444,7 @@ try
             % obtener resultados (valores de M, phi y c)
             resultados = handles.resultadosMphi;
             
-            % obtener variables y reconvertirlas a centímetros
+            % obtener variables y reconvertirlas a centÃ­metros
             h = 0.1*handles.input_h.UserData;
             d2 = 0.1*handles.input_d2.UserData;
             d1 = 0.1*handles.input_d1.UserData;            
@@ -469,13 +470,13 @@ try
             plot(phi,M,'o','markerfacecolor',[0 0.4470 0.7410],'markeredgecolor','b','tag','punto')
         end
     else
-        errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un número real.','Error en el ingreso de datos','modal')
+        errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un nÃºmero real.','Error en el ingreso de datos','modal')
     end
 catch
-    errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un número real.','Error en el ingreso de datos','modal')
+    errordlg('El valor ingresado (directamente o mediante el uso de funciones) debe ser un nÃºmero real.','Error en el ingreso de datos','modal')
 end
 
-% actualización de outputs (objetos Java de tipo JLabels)
+% actualizaciÃ³n de outputs (objetos Java de tipo JLabels)
 handles.M_2.setText(num2str(M,'%.2f'));
 handles.c_2.setText(num2str(c,'%.2f'));
 handles.ec_2.setText(num2str(ec,'%.5f'));
