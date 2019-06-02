@@ -36,8 +36,8 @@ beta1 = max(0.65,min(0.85,0.85-0.008*(fcc-30)));
 eu = 0.003; % deformacion maxima a compresion del hormigon en el estado limite ultimo, segun ACI 318
 
 % discretizacion elegida para el analisis seccional
-dy = h/n; % largo de segmento
-y = 0:dy:h; % distancia a cada segmento (a sus extremos) medida desde el borde inferior de la seccion
+dy = h/n; % altura de segmento
+y = dy/2:dy:h-dy/2; % distancia a cada segmento (a sus centros) medida desde el borde inferior de la seccion
 
 % definicion del rango de muestra para las curvaturas
 nphi = 500; % se se considera un total de 500 curvaturas
@@ -47,35 +47,43 @@ if ~isempty(varargin)
     signo_curvatura = varargin{1};
     if signo_curvatura == -1, ymax = 0; end % fibra inferior es la mas comprimida (o menos traccionada)
 end
-% se considera un phi maximo de 1.5 veces la curvatura teorica para la cual se alcanza una deformacion maxima de ec=eu=0.003
+% se considera un phi maximo de 2 veces la curvatura teorica para la cual se alcanza una deformacion maxima de ec=eu=0.003
 cu1 = (Pext+As1*fy-Es1*As2*eu+((Es1*As2*eu-As1*fy-Pext)^2+3.4*beta1*fcc*b*As2*Es1*eu*d2)^0.5)/(1.7*fcc*b*beta1);
 cu2 = (Pext+As2*fy-Es1*As1*eu+((Es1*As1*eu-As2*fy-Pext)^2+3.4*beta1*fcc*b*As1*Es1*eu*(h-d1))^0.5)/(1.7*fcc*b*beta1);
 cu = max(cu1,cu2);
-phif = 1.5*signo_curvatura*eu/cu;
-phi = linspace(0,phif,nphi);% 
+phif = 2*signo_curvatura*eu/cu;
+phi = linspace(0,phif,nphi);
+dphi = phif/(nphi-1);
 
 % inicializar variables
-Fc = zeros(1,n); % fuerzas en cada segmento de hormigon
-yc = zeros(1,n); % brazos de palanca de cada fuerza Fc
 M = zeros(1,nphi); % momentos resultantes para cada curvatura
 c = zeros(1,nphi); % profundidad del eje neutro para cada curvatura
 ec = zeros(1,nphi); % deformacion unitaria maxima de compresion para cada curvatura
+indSaltoPhi = zeros(1,nphi); % indices de las curvaturas excluidas
 
 % inicializar los parametros de la iteracion
 dp = 0; % error inicial considerado
 eo = 0; % deformacion unitaria inicial considerada (en h/2)
 J = Ecc*b*h+Es1*(As1+As2); % rigidez inicial considerada
-c(1) = Inf; % phi=0 ---> c=inf
+c(1) = Inf; % phi = 0 ---> c = inf
+i = 2; % las iteraciones inician para phi > 0
+k = 1; % contador de curvaturas en que no hubo convergencia
 
-% calculo del momento asociado a cada curvatura
-for i = 2:nphi
+% iteraciones para cada curvatura
+while i <= nphi || ec(end) < 0.008
+    % agregar nueva curvatura si es que se supero el limite predefinido sin
+    % alcanzar la deformacion maxima del hormigon no confinado (ec = 0.008)
+    if i > nphi
+        nphi = nphi+1;
+        phi(i) = phi(i-1)+dphi;
+    end
+    
     error = tolerancia+1; % para entrar en un nuevo ciclo de iteraciones para la curvatura siguiente
-    numIteraciones = 0; % contador de iteraciones para
+    numIteraciones = 0; % contador de iteraciones para la curvatura phi(i)
     
     % iteraciones (se considerara esfuerzos/deformaciones/fuerzas positivas para la compresion)
     while error > tolerancia % test de convergencia
-        % si no es posible lograr el equilibrio de fuerzas (seccion colapso??), finalizar el analisis
-        if J == 0 || numIteraciones > 10, return, end
+        numIteraciones = numIteraciones+1;        
         
         % correccion de las deformaciones unitarias
         deo = J^-1*dp;
@@ -87,15 +95,12 @@ for i = 2:nphi
         [fs,Es] = curvaAcero(es,parametros);
         Fs = fs.*[As1,As2];
         
-        % calculo de tensiones, rigideces tangentes, fuerzas y brazos de palanca en cada segmento de hormigon
+        % calculo de tensiones, rigideces tangentes y fuerzas en cada segmento de hormigon
         [fc,Ec] = curvaHormigon(e,parametros);
-        for k = 1:n
-            Fc(k) = 0.5*(fc(k)+fc(k+1))*b*dy; % se usa un punto de integracion --> area del trapecio en el perfil de tensiones
-            if Fc(k) ~= 0, yc(k) = y(k)+dy/3*(fc(k)+2*fc(k+1))/(fc(k)+fc(k+1)); end % yc(k)=0.5*(y(k)+y(k+1));
-        end
+        Fc = fc*b*dy;
         
         % calculo de tensiones del hormigon en las zonas donde esta distribuida la armadura
-        % (para cuantias de acero pequeñas este calculo es poco relevante)
+        % (para cuantias de acero chicas este calculo es poco relevante)
         fc_As = curvaHormigon(es,parametros);
         Fc_ficticia = fc_As.*[As1,As2]; % estas fuerzas son descontadas para obtener la contribucion real del hormigon
         
@@ -104,15 +109,34 @@ for i = 2:nphi
         error = abs(dp);
         
         % actualizar rigidez J para nueva iteracion
-        J = sum(Ec)*b*dy+sum(Es.*[As1,As2]);
-        numIteraciones = numIteraciones+1;
+        if numIteraciones < 11
+            J = sum(Ec)*b*dy+sum(Es.*[As1,As2]);
+        else % si hay divergencia, descartar phi
+            indSaltoPhi(k) = i;
+            k = k+1;
+            break
+        end
+    end
+    
+    % terminar analisis si el elemento colapso
+    if J == 0
+        nphi = i-1;
+        break
     end
 
-    % resultados para la curvatura phi(i)
+    % almacenar los resultados asociados a la curvatura phi(i)
     M(i) = (sum(Fs.*[h-d1,h-d2])+sum(Fc.*yc)-sum(Fc_ficticia.*[h-d1,h-d2])-Pext*h/2)*10^-6;
     ec(i) = eo+phi(i)*(ymax-h/2);
     c(i) = ec(i)/abs(phi(i));
+    i = i+1;
 end
+
+% redimensionar los resultados excluyendo los datos en que no hubo convergencia
+ind = ~ismember(1:nphi,indSaltoPhi);
+phi = phi(ind);
+M = M(ind);
+c = c(ind);
+ec = ec(ind); %#ok<*NASGU>
 
 end
 
@@ -132,7 +156,7 @@ fs = zeros(1,m); % tensiones en el acero
 Es = zeros(1,m); % modulo de elasticidad tangente del acero (derivada de la funcion fs)
 
 % calcular para cada capa de refuerzo (generalmente se simplifica considerando una capa inferior y otra superior)
-if opcionAcero{1} == 1 % modelo elastoplastico   
+if opcionAcero{1} == 1 % modelo elastoplastico
     ef = parametros.ef; % maxima deformacion unitaria permitida
     Es2 = Es1*parametros.Es2; % modulo de elasticidad despues del tramo lineal-elastico del acero (en MPa)    
     
