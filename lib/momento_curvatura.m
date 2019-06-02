@@ -125,7 +125,7 @@ while i <= nphi || ec(end) < 0.008
     end
 
     % almacenar los resultados asociados a la curvatura phi(i)
-    M(i) = (sum(Fs.*[h-d1,h-d2])+sum(Fc.*yc)-sum(Fc_ficticia.*[h-d1,h-d2])-Pext*h/2)*10^-6;
+    M(i) = (sum(Fs.*[h-d1,h-d2])+sum(Fc.*y)-sum(Fc_ficticia.*[h-d1,h-d2])-Pext*h/2)*10^-6;
     ec(i) = eo+phi(i)*(ymax-h/2);
     c(i) = ec(i)/abs(phi(i));
     i = i+1;
